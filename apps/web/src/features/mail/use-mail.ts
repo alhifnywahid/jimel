@@ -27,8 +27,9 @@ type MailState = {
   loadInbox: (address: string) => Promise<void>;
   select: (id: Mail["id"] | null) => Promise<void>;
   remove: (id: Mail["id"]) => Promise<void>;
-  /** Add a new email header (from WS/polling) at the very top. */
-  addHeader: (header: EmailHeader) => void;
+  /** Add a new email header (from WS/polling) at the very top. Returns true if it
+   * was genuinely new (not a duplicate) so the caller can chime only for new mail. */
+  addHeader: (header: EmailHeader) => boolean;
   reset: () => void;
 };
 
@@ -105,11 +106,14 @@ export const useMailStore = create<MailState>((set, get) => ({
 
   addHeader: (header) => {
     const address = get().address;
-    if (!address) return;
+    if (!address) return false;
+    let isNew = false;
     set((s) => {
       if (s.mails.some((m) => m.id === header.id)) return s;
+      isNew = true;
       return { mails: [headerToMail(header, address), ...s.mails] };
     });
+    return isNew;
   },
 
   reset: () => set({ mails: [], selected: null, loadingBody: null, error: null }),

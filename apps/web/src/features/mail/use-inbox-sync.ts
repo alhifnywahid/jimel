@@ -13,6 +13,7 @@
 import type { WsMessage } from "@jimel/shared";
 import { useEffect } from "react";
 import { fetchInbox } from "@/lib/api";
+import { playNewMailChime } from "./notify-sound";
 import { useMailStore } from "./use-mail";
 
 const POLL_INTERVAL_MS = 8000;
@@ -48,7 +49,12 @@ export function useInboxSync(address: string | null): void {
         try {
           const inbox = await fetchInbox(address);
           if (disposed) return;
-          for (const header of inbox.emails) addHeader(header);
+          // addHeader dedupes; chime only when a genuinely new email appears.
+          let arrived = false;
+          for (const header of inbox.emails) {
+            if (addHeader(header)) arrived = true;
+          }
+          if (arrived) playNewMailChime();
         } catch {
           /* one failed poll is not fatal; the next attempt runs again */
         }
@@ -76,7 +82,7 @@ export function useInboxSync(address: string | null): void {
         if (msg.type === "ready") {
           stopPolling();
         } else if (msg.type === "email") {
-          addHeader(msg.email);
+          if (addHeader(msg.email)) playNewMailChime();
         }
       };
 

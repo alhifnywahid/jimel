@@ -18,6 +18,7 @@ import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 
 import { MailSidebar } from "./mail-sidebar";
 import { MailView } from "./mail-view";
+import { SoundToggle } from "./sound-toggle";
 import { useAddressStore } from "./use-address";
 import { useInboxSync } from "./use-inbox-sync";
 import { useMailStore } from "./use-mail";
@@ -95,6 +96,7 @@ export function MailShell() {
               </Button>
               <LayoutControls />
               <ThemeSwitcher />
+              <SoundToggle />
               <GitHubRepositoriesMenu />
               <AccountSwitcher users={users} />
             </div>
