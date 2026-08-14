@@ -40,6 +40,25 @@ new_sqlite_classes = ["InboxRoom"]
 [triggers]
 crons = ["*/10 * * * *"]
 
+# ── Observability (Workers Logs) ──
+# Enables persistent logs + traces so email() and the API can be debugged from
+# the dashboard (Worker -> Observability / Logs). Translated from the snippet
+# the dashboard asked to add.
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+persist = true
+head_sampling_rate = 1
+
 # ── Configuration lives in the DASHBOARD, not here ──
 # MAIL_DOMAINS and MESSAGE_TTL_MINUTES are set in the Cloudflare dashboard
 # (Worker -> Settings -> Variables and secrets), so anyone can add or change
