@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 470" width="1200" height="470" role="img" aria-label="JIMEL flow: email arrives via Cloudflare Email Routing into the Worker's email() handler, is stored in D1, and pushed via a Durable Object to the browser; the browser also calls the REST /api of the same Worker">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5B677A"/>
+    </marker>
+    <marker id="arT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5EEAD4"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="470" rx="16" fill="#0B0D12"/>
+  <g font-family="ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+    <text x="40" y="52" font-size="24" font-weight="700" fill="#F4F7FB">A single Worker flow</text>
+    <text x="40" y="80" font-size="19" fill="#8C97A8">No other server. No external queue. One `wrangler deploy`.</text>
+
+    <!-- Sender -->
+    <rect x="40" y="130" width="196" height="92" rx="12" fill="#141821" stroke="#232A36"/>
+    <text x="138" y="170" font-size="21" fill="#E8ECF2" text-anchor="middle">Any sender</text>
+    <text x="138" y="197" font-size="18" fill="#8C97A8" text-anchor="middle">GitHub, Vercel, …</text>
+
+    <!-- Email Routing -->
+    <rect x="296" y="130" width="212" height="92" rx="12" fill="#141821" stroke="#232A36"/>
+    <text x="402" y="164" font-size="21" fill="#E8ECF2" text-anchor="middle">Email Routing</text>
+    <text x="402" y="191" font-size="18" fill="#F0B429" text-anchor="middle">catch-all (manual)</text>
+    <text x="402" y="212" font-size="17" fill="#8C97A8" text-anchor="middle">*@yourdomain.com</text>
+
+    <!-- Worker -->
+    <rect x="568" y="104" width="266" height="256" rx="14" fill="#10141C" stroke="#2B3444"/>
+    <text x="701" y="136" font-size="21" font-weight="700" fill="#5EEAD4" text-anchor="middle">Worker `tempmail`</text>
+    <rect x="592" y="154" width="218" height="52" rx="10" fill="#1A202C" stroke="#2B3444"/>
+    <text x="701" y="186" font-size="19" fill="#E8ECF2" text-anchor="middle">email()  parse MIME</text>
+    <rect x="592" y="218" width="218" height="52" rx="10" fill="#1A202C" stroke="#2B3444"/>
+    <text x="701" y="250" font-size="19" fill="#E8ECF2" text-anchor="middle">fetch()  REST + UI</text>
+    <rect x="592" y="282" width="218" height="52" rx="10" fill="#1A202C" stroke="#2B3444"/>
+    <text x="701" y="314" font-size="19" fill="#E8ECF2" text-anchor="middle">scheduled()  purge</text>
+
+    <!-- D1 -->
+    <rect x="894" y="104" width="266" height="88" rx="12" fill="#141821" stroke="#232A36"/>
+    <text x="1027" y="138" font-size="21" fill="#E8ECF2" text-anchor="middle">D1 (SQLite)</text>
+    <text x="1027" y="165" font-size="18" fill="#8C97A8" text-anchor="middle">addresses · emails</text>
+
+    <!-- DO -->
+    <rect x="894" y="212" width="266" height="88" rx="12" fill="#141821" stroke="#232A36"/>
+    <text x="1027" y="246" font-size="21" fill="#E8ECF2" text-anchor="middle">Durable Object</text>
+    <text x="1027" y="273" font-size="18" fill="#8C97A8" text-anchor="middle">one room per address</text>
+
+    <!-- Browser -->
+    <rect x="894" y="320" width="266" height="88" rx="12" fill="#141821" stroke="#232A36"/>
+    <text x="1027" y="354" font-size="21" fill="#E8ECF2" text-anchor="middle">Browser / API client</text>
+    <text x="1027" y="381" font-size="18" fill="#8C97A8" text-anchor="middle">WebSocket, polling fallback</text>
+
+    <!-- arrows -->
+    <line x1="240" y1="176" x2="290" y2="176" stroke="#5B677A" stroke-width="2" marker-end="url(#ar)"/>
+    <line x1="512" y1="176" x2="562" y2="176" stroke="#5B677A" stroke-width="2" marker-end="url(#ar)"/>
+    <line x1="814" y1="180" x2="888" y2="148" stroke="#5B677A" stroke-width="2" marker-end="url(#ar)"/>
+    <line x1="814" y1="192" x2="888" y2="250" stroke="#5EEAD4" stroke-width="2" marker-end="url(#arT)"/>
+    <line x1="1027" y1="304" x2="1027" y2="316" stroke="#5EEAD4" stroke-width="2" marker-end="url(#arT)"/>
+    <path d="M894 364 L860 364 L860 244 L838 244" fill="none" stroke="#5B677A" stroke-width="2" marker-end="url(#ar)"/>
+    <line x1="1027" y1="196" x2="1027" y2="208" stroke="#5B677A" stroke-width="2" marker-end="url(#ar)"/>
+
+    <text x="40" y="424" font-size="18" fill="#8C97A8">Blue line = store / request data.</text>
+    <text x="40" y="450" font-size="18" fill="#5EEAD4">Green line = realtime push, email appears without a refresh.</text>
+  </g>
+</svg>

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# PRs pushed repeatedly: cancel older runs, keep only the latest.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # Monorepo npm workspaces - one install at the root covers everything.
+      - run: npm ci
+
+      - name: Biome (format + lint)
+        run: npm run lint
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      # Building the frontend also proves the Worker has assets to serve.
+      # Deploy is NOT run in CI - it needs the instance owner's Cloudflare credentials.
+      - name: Build frontend
+        run: npm run build

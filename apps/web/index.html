@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JIMEL - Temporary Email</title>
+    <script>
+      // Boot preferences (theme/layout) before hydration to avoid flicker.
+      // Copied from the dashboard ThemeBootScript, but without Next.
+      (function () {
+        try {
+          var root = document.documentElement;
+          var REGISTRY = window.__JIMEL_PREF_REGISTRY__ || null;
+          function readCookie(name) {
+            var match = document.cookie.split("; ").find(function (c) {
+              return c.startsWith(name + "=");
+            });
+            return match ? decodeURIComponent(match.split("=")[1]) : null;
+          }
+          var defaults = {
+            "theme_mode": "data-theme-mode",
+            "theme_preset": "data-theme-preset",
+            "font": "data-font",
+            "content_layout": "data-content-layout",
+            "navbar_style": "data-navbar-style",
+            "sidebar_variant": "data-sidebar-variant",
+            "sidebar_collapsible": "data-sidebar-collapsible",
+          };
+          var defaultValues = {
+            "theme_mode": "light",
+            "theme_preset": "default",
+            "font": "geist",
+            "content_layout": "centered",
+            "navbar_style": "sticky",
+            "sidebar_variant": "sidebar",
+            "sidebar_collapsible": "icon",
+          };
+          Object.keys(defaults).forEach(function (key) {
+            var val = readCookie(key) || defaultValues[key];
+            root.setAttribute(defaults[key], val);
+          });
+          var mode = readCookie("theme_mode") || "light";
+          var resolved =
+            mode === "system" && window.matchMedia
+              ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+              : mode === "dark"
+                ? "dark"
+                : "light";
+          root.classList.toggle("dark", resolved === "dark");
+          root.style.colorScheme = resolved;
+        } catch (e) {
+          console.warn("boot pref error", e);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

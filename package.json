@@ -1,0 +1,25 @@
+{
+  "name": "tempmail",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "setup": "node scripts/setup-deploy.mjs",
+    "dev": "npm run dev --workspace @jimel/api",
+    "dev:web": "npm run dev --workspace @jimel/web",
+    "build": "npm run build --workspace @jimel/web",
+    "deploy": "npm run build && npm run deploy --workspace @jimel/api",
+    "db:init": "npm run db:init --workspace @jimel/api",
+    "db:init:local": "npm run db:init:local --workspace @jimel/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.0"
+  }
+}

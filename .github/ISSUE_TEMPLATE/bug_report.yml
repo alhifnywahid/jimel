@@ -1,0 +1,98 @@
+name: Bug report
+description: Something is not working as it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you continue: check [SUPPORT.md](../blob/main/SUPPORT.md) - the list of common problems there
+        answers most reports, especially "no email arrives at all".
+
+        **Do not paste real emails, API tokens, or your `database_id` here.**
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have read the list of common problems in SUPPORT.md
+          required: true
+        - label: I have searched for other similar issues
+          required: true
+        - label: This is not a security vulnerability report (if it is, use SECURITY.md)
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened
+      description: Briefly describe what went wrong, and what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `npm run dev`
+        2. Open http://localhost:5173
+        3. Click "Create address"
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message / log
+      description: As-is from the terminal or DevTools Console. Redact anything sensitive.
+      render: shell
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Where it happens
+      options:
+        - Local (npm run dev)
+        - After deploying to Cloudflare
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit / version
+      placeholder: "main @ a1b2c3d, or v1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: versions
+    attributes:
+      label: Tool versions
+      description: Output of `node -v` and `npx wrangler --version`.
+      placeholder: |
+        node v20.11.0
+        wrangler 4.123.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: vars
+    attributes:
+      label: The [vars] section in wrangler.toml
+      description: You may mask the domain name. DO NOT include `database_id`.
+      render: toml
+      placeholder: |
+        MAIL_DOMAINS = "myexample.com"
+        MESSAGE_TTL_MINUTES = "60"
+
+  - type: checkboxes
+    id: catch-all
+    attributes:
+      label: If the problem is about email not arriving
+      options:
+        - label: Email Routing is already enabled and the MX record exists
+        - label: Catch-all is pointed to the `tempmail` Worker and its status is Enabled

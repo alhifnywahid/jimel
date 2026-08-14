@@ -1,0 +1,4 @@
+# Default reviewer for all changes.
+# Useful later if there are collaborators: PRs automatically request a review here,
+# and it can back a "require review from Code Owners" branch protection.
+* @alhifnywahid

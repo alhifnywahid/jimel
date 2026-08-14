@@ -1,0 +1,33 @@
+# Normalize line endings: LF in the repo, OS-native in the working directory.
+* text=auto eol=lf
+
+# Shell scripts must be LF so they are executable on Linux/macOS.
+*.sh text eol=lf
+*.mjs text eol=lf
+
+# Windows scripts must be CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files - do not diff or merge them as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+
+# Lockfile: hide its diff in PRs, and use npm's default merge strategy.
+package-lock.json -diff linguist-generated=true
+
+# GitHub "Languages" tab: do not count assets & docs as project code.
+assets/readme/** linguist-documentation
+*.md linguist-documentation
+
+# Keep out of `git archive` / release tarballs.
+# assets/ is NOT here - the README references its images, the tarball must stay intact.
+.github export-ignore
+.gitattributes export-ignore
