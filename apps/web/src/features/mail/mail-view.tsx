@@ -214,29 +214,43 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 /**
  * Render the provider's original HTML email faithfully, isolated in a sandboxed
- * iframe. The sandbox has NO allow-scripts and NO allow-same-origin, so email
- * markup cannot run JavaScript, read our cookies, or touch the app DOM - it only
- * paints. The iframe auto-sizes to its content height on load.
+ * iframe. The sandbox allows same-origin (so we can measure the content height and
+ * remove the inner scrollbar) but NOT allow-scripts, so email markup still cannot
+ * run any JavaScript. The iframe grows to fit its content, images included.
  */
 function HtmlBody({ html }: { html: string }) {
   const ref = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(240);
 
-  const resize = useCallback(() => {
+  const measure = useCallback(() => {
     const doc = ref.current?.contentDocument;
-    if (doc?.body) {
-      setHeight(doc.documentElement.scrollHeight || doc.body.scrollHeight);
-    }
+    if (!doc?.body) return;
+    // Real content height; +2 avoids a 1px rounding scrollbar.
+    const h = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+    if (h > 0) setHeight(h + 2);
   }, []);
 
-  // A minimal wrapper: force readable defaults, let images scale, block form posts.
+  // Re-measure after load, after late-loading images, and on any reflow.
+  const handleLoad = useCallback(() => {
+    measure();
+    const doc = ref.current?.contentDocument;
+    if (!doc) return;
+    for (const img of Array.from(doc.images)) {
+      if (!img.complete) img.addEventListener("load", measure, { once: true });
+    }
+    // A few delayed passes catch fonts/images that settle after first paint.
+    window.setTimeout(measure, 150);
+    window.setTimeout(measure, 600);
+  }, [measure]);
+
+  // A minimal wrapper: force readable defaults and let images scale.
   const srcDoc = `<!doctype html><html><head><meta charset="utf-8">
 <base target="_blank">
 <style>
   html,body{margin:0;padding:0;background:#fff;color:#111;
     font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     word-break:break-word;overflow-wrap:break-word;-webkit-text-size-adjust:100%;}
-  body{padding:4px 2px;}
+  body{padding:4px 2px;overflow:hidden;}
   img,video{max-width:100%!important;height:auto;}
   table{max-width:100%!important;}
   a{color:#2563eb;}
@@ -246,9 +260,10 @@ function HtmlBody({ html }: { html: string }) {
     <iframe
       ref={ref}
       title="Email content"
-      sandbox="allow-popups allow-popups-to-escape-sandbox"
+      sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       srcDoc={srcDoc}
-      onLoad={resize}
+      onLoad={handleLoad}
+      scrolling="no"
       className="w-full rounded-md border bg-white"
       style={{ height }}
     />
