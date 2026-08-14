@@ -1,0 +1,33 @@
+# Normalisasi line ending: LF di repo, sesuai OS di working directory.
+* text=auto eol=lf
+
+# Skrip shell wajib LF supaya bisa dieksekusi di Linux/macOS.
+*.sh text eol=lf
+*.mjs text eol=lf
+
+# Skrip Windows wajib CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# File biner - jangan di-diff atau di-merge sebagai teks.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+
+# Lockfile: jangan tampilkan diffnya di PR, dan pakai strategi merge bawaan npm.
+package-lock.json -diff linguist-generated=true
+
+# Tab "Languages" GitHub: jangan hitung aset & dokumentasi sebagai kode project.
+assets/readme/** linguist-documentation
+*.md linguist-documentation
+
+# Jangan ikut terbawa ke `git archive` / tarball release.
+# assets/ TIDAK di sini - README merujuk gambarnya, tarball harus tetap utuh.
+.github export-ignore
+.gitattributes export-ignore

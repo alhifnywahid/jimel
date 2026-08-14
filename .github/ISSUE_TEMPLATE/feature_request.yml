@@ -1,0 +1,61 @@
+name: Usulan fitur
+description: Ide untuk membuat JIMEL lebih berguna
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sebelum menulis kode, buka issue ini dulu. Lebih baik berdiskusi 10 menit
+        daripada PR 500 baris yang ternyata tidak sejalan dengan arah project.
+
+        Beberapa hal sudah pasti di luar cakupan - cek bagian
+        "Yang mungkin ditolak" di [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md).
+
+  - type: textarea
+    id: masalah
+    attributes:
+      label: Masalah apa yang mau diselesaikan
+      description: Ceritakan situasi nyatanya, bukan langsung solusinya. Apa yang saat ini menyulitkan?
+    validations:
+      required: true
+
+  - type: textarea
+    id: usulan
+    attributes:
+      label: Usulanmu
+      description: Bagaimana bentuknya dari sisi pengguna? Kalau menyentuh API, tulis contoh request/responsnya.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatif
+    attributes:
+      label: Alternatif yang sudah kamu pertimbangkan
+      description: Termasuk cara mengakalinya sekarang tanpa fitur ini.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Bagian mana yang terpengaruh
+      multiple: true
+      options:
+        - UI / frontend
+        - REST API
+        - Realtime (WebSocket / polling)
+        - Penerimaan email (handler email)
+        - Database / skema D1
+        - Deploy & setup
+        - Dokumentasi
+        - Belum tahu
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: batasan
+    attributes:
+      label: Sesuai batasan project
+      description: JIMEL harus tetap berjalan penuh di dalam satu Worker.
+      options:
+        - label: Usulan ini tidak butuh layanan eksternal baru (Redis, queue, database lain)
+        - label: Usulan ini tidak menambahkan autentikasi ke API publik
+        - label: Saya bersedia mengerjakan PR-nya kalau usulan ini diterima

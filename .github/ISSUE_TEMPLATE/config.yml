@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Pertanyaan pemakaian
+    url: https://github.com/alhifnywahid/jimel/blob/main/SUPPORT.md
+    about: Daftar masalah umum - cek dulu di sini sebelum membuka issue.
+  - name: Diskusi & tanya jawab
+    url: https://github.com/alhifnywahid/jimel/discussions
+    about: Untuk pertanyaan, ide, atau memamerkan hasil deploy-mu.
+  - name: Lapor celah keamanan
+    url: https://github.com/alhifnywahid/jimel/security/advisories/new
+    about: Jangan lewat issue publik. Pakai security advisory privat.
+  - name: Dokumentasi API
+    url: https://github.com/alhifnywahid/jimel#api
+    about: Referensi lengkap juga tersedia di route /docs pada instansmu.

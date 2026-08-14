@@ -1,0 +1,98 @@
+name: Bug report
+description: Ada yang tidak berjalan semestinya
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sebelum lanjut: cek [SUPPORT.md](../blob/main/SUPPORT.md) - daftar masalah umum di situ
+        menjawab sebagian besar laporan, terutama "email tidak masuk sama sekali".
+
+        **Jangan tempel email sungguhan, token API, atau `database_id` di sini.**
+
+  - type: checkboxes
+    id: prasyarat
+    attributes:
+      label: Prasyarat
+      options:
+        - label: Saya sudah membaca daftar masalah umum di SUPPORT.md
+          required: true
+        - label: Saya sudah mencari issue lain yang serupa
+          required: true
+        - label: Ini bukan laporan celah keamanan (kalau iya, lewat SECURITY.md)
+          required: true
+
+  - type: textarea
+    id: masalah
+    attributes:
+      label: Apa yang terjadi
+      description: Jelaskan singkat apa yang salah, dan apa yang kamu harapkan terjadi.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduksi
+    attributes:
+      label: Langkah reproduksi
+      placeholder: |
+        1. Jalankan `npm run dev`
+        2. Buka http://localhost:5173
+        3. Klik "Buat alamat"
+        4. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Pesan error / log
+      description: Apa adanya dari terminal atau DevTools Console. Sensor bagian yang sensitif.
+      render: shell
+
+  - type: dropdown
+    id: lingkungan
+    attributes:
+      label: Terjadi di mana
+      options:
+        - Lokal (npm run dev)
+        - Setelah deploy ke Cloudflare
+        - Keduanya
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit / versi
+      placeholder: "main @ a1b2c3d, atau v1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: versi
+    attributes:
+      label: Versi tool
+      description: Hasil `node -v` dan `npx wrangler --version`.
+      placeholder: |
+        node v20.11.0
+        wrangler 4.123.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: vars
+    attributes:
+      label: Isi [vars] di wrangler.toml
+      description: Boleh disamarkan nama domainnya. JANGAN sertakan `database_id`.
+      render: toml
+      placeholder: |
+        MAIL_DOMAINS = "contohku.com"
+        MESSAGE_TTL_MINUTES = "60"
+
+  - type: checkboxes
+    id: catch-all
+    attributes:
+      label: Kalau masalahnya soal email tidak masuk
+      options:
+        - label: Email Routing sudah aktif dan MX record sudah ada
+        - label: Catch-all sudah diarahkan ke Worker `tempmail` dan statusnya Enabled

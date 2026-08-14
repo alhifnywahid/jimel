@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# PR yang di-push berkali-kali: batalkan run lama, jalankan yang terbaru saja.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Monorepo npm workspaces - satu install di root sudah mencakup semuanya.
+      - run: npm ci
+
+      - name: Biome (format + lint)
+        run: npm run lint
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      # Membangun frontend juga membuktikan Worker punya aset untuk disajikan.
+      # Deploy TIDAK dijalankan di CI - butuh kredensial Cloudflare milik pemilik instans.
+      - name: Build frontend
+        run: npm run build

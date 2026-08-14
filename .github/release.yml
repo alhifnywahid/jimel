@@ -1,0 +1,19 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - duplicate
+      - invalid
+  categories:
+    - title: Fitur baru
+      labels: ["enhancement", "feature"]
+    - title: Perbaikan bug
+      labels: ["bug", "fix"]
+    - title: Keamanan
+      labels: ["security"]
+    - title: Dokumentasi
+      labels: ["documentation"]
+    - title: Dependency
+      labels: ["dependencies"]
+    - title: Lainnya
+      labels: ["*"]

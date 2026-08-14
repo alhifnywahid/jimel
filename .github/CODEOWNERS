@@ -1,0 +1,4 @@
+# Reviewer default untuk semua perubahan.
+# Berguna nanti kalau ada kolaborator: PR otomatis meminta review ke sini,
+# dan bisa dipasangi branch protection "require review from Code Owners".
+* @alhifnywahid
