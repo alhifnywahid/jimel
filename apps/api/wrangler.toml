@@ -4,6 +4,12 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Runtime config (MAIL_DOMAINS, MESSAGE_TTL_MINUTES) is managed in the Cloudflare
+# dashboard, NOT in this file, so anyone can set their domains without editing code.
+# keep_vars stops every deploy from deleting those dashboard values. See the note
+# at the bottom of this file.
+keep_vars = true
+
 # ── Static assets (the built apps/web UI) ──
 # The Worker serves FE + BE from one URL. run_worker_first so /api & /ws
 # are handled by the Worker, the rest falls through to the SPA. Path is relative to apps/api/ -> sibling apps/web.
@@ -34,11 +40,16 @@ new_sqlite_classes = ["InboxRoom"]
 [triggers]
 crons = ["*/10 * * * *"]
 
-# ── Configuration (self-hosters may change these) ──
-[vars]
-# Your email domains, comma-separated. The catch-all of EVERY domain must be pointed
-# at this Worker (Email Routing). The FIRST domain = default in the UI.
-# Multi-domain example: MAIL_DOMAINS = "jimel.email,mail2.io,tempbox.dev"
-MAIL_DOMAINS = "example.com"
-# Email retention in minutes (default 60 = 1 hour).
-MESSAGE_TTL_MINUTES = "60"
+# ── Configuration lives in the DASHBOARD, not here ──
+# MAIL_DOMAINS and MESSAGE_TTL_MINUTES are set in the Cloudflare dashboard
+# (Worker -> Settings -> Variables and secrets), so anyone can add or change
+# domains without touching code or the CLI. They are intentionally NOT listed
+# here: a var written in [vars] would OVERWRITE the dashboard value on every
+# deploy. keep_vars = true (at the top) tells Cloudflare to leave the dashboard
+# values alone.
+#
+#   MAIL_DOMAINS         comma-separated; the FIRST domain = default in the UI
+#                        e.g. "jimel.eu.cc,indomie.eu.cc"
+#   MESSAGE_TTL_MINUTES  email/address lifetime in minutes (default 60)
+#
+# For local dev, put them in apps/api/.dev.vars (gitignored) instead.
