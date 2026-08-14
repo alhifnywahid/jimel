@@ -1,27 +1,20 @@
 /**
  * sound-toggle.tsx - a bell button in the header to mute/unmute the new-mail chime.
  *
- * The preference lives in localStorage (see notify-sound.ts); this is just the
- * control. Clicking it also plays the chime once when turning sound ON, so the
- * user hears what they enabled (and it satisfies the browser's user-gesture rule).
+ * The preference lives in the sound store (persisted to localStorage). Enabling
+ * plays the chosen chime once so the user hears what they turned on (and it
+ * satisfies the browser's user-gesture requirement for audio).
  */
 
 import { Bell, BellOff } from "lucide-react";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { isSoundEnabled, playNewMailChime, setSoundEnabled } from "./notify-sound";
+import { useSoundStore } from "./use-sound";
 
 export function SoundToggle() {
-  const [enabled, setEnabled] = useState(isSoundEnabled);
-
-  function toggle() {
-    const next = !enabled;
-    setEnabled(next);
-    setSoundEnabled(next);
-    if (next) playNewMailChime(); // preview the chime when enabling
-  }
+  const enabled = useSoundStore((s) => s.enabled);
+  const setEnabled = useSoundStore((s) => s.setEnabled);
 
   return (
     <Tooltip>
@@ -29,7 +22,7 @@ export function SoundToggle() {
         <Button
           variant="ghost"
           size="icon-sm"
-          onClick={toggle}
+          onClick={() => setEnabled(!enabled)}
           aria-label={enabled ? "Mute new-mail sound" : "Unmute new-mail sound"}
           aria-pressed={enabled}
         >

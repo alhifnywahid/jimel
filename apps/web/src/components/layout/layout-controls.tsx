@@ -21,6 +21,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SOUND_OPTIONS, type SoundId } from "@/features/mail/notify-sound";
+import { useSoundStore } from "@/features/mail/use-sound";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { type FontKey, fontOptions } from "@/lib/fonts/registry";
 import type {
@@ -43,6 +45,11 @@ export function LayoutControls() {
       resetPreferences: state.resetPreferences,
     })),
   );
+
+  const soundEnabled = useSoundStore((s) => s.enabled);
+  const soundChoice = useSoundStore((s) => s.choice);
+  const setSoundEnabled = useSoundStore((s) => s.setEnabled);
+  const setSoundChoice = useSoundStore((s) => s.setChoice);
 
   const {
     theme_mode: themeMode,
@@ -79,6 +86,43 @@ export function LayoutControls() {
                     {fontOptions.map((f) => (
                       <SelectItem key={f.key} className="text-xs" value={f.key}>
                         {f.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="font-medium text-xs">Notification Sound</Label>
+              <ToggleGroup
+                size="sm"
+                spacing={0}
+                variant="outline"
+                type="single"
+                value={soundEnabled ? "on" : "off"}
+                onValueChange={(v: string) => v && setSoundEnabled(v === "on")}
+              >
+                <ToggleGroupItem value="on" aria-label="Sound on">
+                  On
+                </ToggleGroupItem>
+                <ToggleGroupItem value="off" aria-label="Sound off">
+                  Off
+                </ToggleGroupItem>
+              </ToggleGroup>
+              <Select
+                value={soundChoice}
+                onValueChange={(v: SoundId) => setSoundChoice(v)}
+                disabled={!soundEnabled}
+              >
+                <SelectTrigger size="sm" className="w-full text-xs">
+                  <SelectValue placeholder="Select sound" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {SOUND_OPTIONS.map((s) => (
+                      <SelectItem key={s.id} className="text-xs" value={s.id}>
+                        {s.label}
                       </SelectItem>
                     ))}
                   </SelectGroup>
