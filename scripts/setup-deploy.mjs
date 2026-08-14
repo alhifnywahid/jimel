@@ -117,7 +117,16 @@ if (!databaseId) {
 
 // ── 3. Write configuration ──
 step(3, "Writing database_id + MAIL_DOMAINS to wrangler.toml…");
-toml = toml.replace(/^database_id\s*=\s*".*"$/m, `database_id = "${databaseId}"`);
+if (/^database_id\s*=\s*".*"$/m.test(toml)) {
+	toml = toml.replace(/^database_id\s*=\s*".*"$/m, `database_id = "${databaseId}"`);
+} else {
+	// The committed wrangler.toml has no database_id (Cloudflare auto-provisions it
+	// for Git-connected deploys). For a CLI deploy we add it under database_name.
+	toml = toml.replace(
+		/^(database_name\s*=\s*".*")$/m,
+		`$1\ndatabase_id = "${databaseId}"`,
+	);
+}
 toml = toml.replace(/^MAIL_DOMAINS\s*=\s*".*"$/m, `MAIL_DOMAINS = "${domains.join(",")}"`);
 writeFileSync(WRANGLER_TOML, toml);
 console.log(`  database_id  = ${databaseId}`);

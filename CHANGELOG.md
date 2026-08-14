@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- **Zero-config database.** The `database_id` is no longer needed in `wrangler.toml`. Cloudflare auto-provisions the D1 database on the first deploy, and the Worker now creates its own tables on first run (`ensureSchema()`), so there is nothing to set up by hand.
+
+### Added
+
+- **Deploy to Cloudflare button** and a Git-connected (Workers Builds) flow: one click clones the repo, provisions resources, deploys, and wires up CI/CD so every `git push` auto-deploys. Domains are managed by editing `MAIL_DOMAINS` in `wrangler.toml` and pushing - no CLI required.
+
 ## [1.0.0] - 2026-08-14
 
 First release.

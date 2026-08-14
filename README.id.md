@@ -18,9 +18,45 @@
 
 ---
 
-## Coba dalam 3 menit
+## Deploy sekali klik (terhubung Git, auto-update)
 
-Butuh: akun Cloudflare + satu domain yang sudah ada di akun itu. Tidak butuh kartu kredit.
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/alhifnywahid/jimel)
+
+Ini jalur yang disarankan. Klik tombolnya, Cloudflare otomatis:
+
+1. **Clone repo ini** ke akun GitHub-mu sendiri.
+2. **Auto-provision** database D1 dan Durable Object lalu mengikatnya ke Worker - tidak ada `database_id` yang perlu diisi, Worker membuat tabelnya sendiri saat pertama jalan.
+3. **Build dan deploy** Worker.
+4. **Menyambungkan CI/CD** (Workers Builds): sejak itu, **tiap `git push` ke `main` auto-deploy**. Kamu tidak pernah menjalankan perintah deploy lagi.
+
+Setelah deploy pertama, tersisa dua langkah manual (keduanya sekali saja, keduanya karena menyentuh akun dan domainmu sendiri):
+
+**a) Atur domainmu.** Edit [`apps/api/wrangler.toml`](apps/api/wrangler.toml) di repo barumu, pada baris `MAIL_DOMAINS`, lalu commit - push-nya auto-deploy:
+
+```toml
+MAIL_DOMAINS = "domainkamu.com"          # atau "domain1.com,domain2.io" untuk beberapa
+```
+
+**b) Arahkan catch-all Email Routing** (per domain, kalau tidak email tidak akan masuk):
+
+> Cloudflare Dashboard → pilih domain → **Email** → **Email Routing** → tab **Routing rules** → **Catch-all address** → Edit → Action **Send to a Worker** → pilih `tempmail` → Enabled → Save.
+
+Buka URL aplikasi, alamat langsung dibuatkan untukmu. Kirim email ke alamat itu dari mana saja - muncul realtime, tanpa refresh.
+
+### Menambah atau menghapus domain nanti
+
+Tanpa CLI, tanpa login. Cukup edit `MAIL_DOMAINS` di `apps/api/wrangler.toml` lalu push:
+
+```toml
+MAIL_DOMAINS = "domain1.com,domain2.io,domainbaru.net"   # tambah: sisipkan
+MAIL_DOMAINS = "domain1.com"                             # hapus: buang dari daftar
+```
+
+`git push` → Cloudflare auto-deploy perubahannya. Untuk domain yang **baru ditambah**, lakukan langkah catch-all (b) sekali. Untuk domain yang **dihapus**, opsional matikan lagi catch-all-nya di dashboard. Domain pertama di daftar selalu jadi default di UI.
+
+## Atau deploy dari komputermu (CLI)
+
+Lebih suka menjalankan sendiri, atau tidak pakai build terhubung-Git? Satu perintah mengurus semuanya:
 
 ```bash
 git clone https://github.com/alhifnywahid/jimel.git
@@ -29,11 +65,7 @@ npm install
 npm run setup -- domainkamu.com
 ```
 
-Perintah terakhir itu login ke Cloudflare, membuat database D1, menulis konfigurasi, membangun frontend, dan men-deploy Worker - lalu mencetak URL aplikasimu. **Satu langkah manual tersisa**, dan tanpanya email tidak akan masuk:
-
-> Cloudflare Dashboard → pilih domain → **Email** → **Email Routing** → tab **Routing rules** → **Catch-all address** → Edit → Action **Send to a Worker** → pilih `tempmail` → Enabled → Save.
-
-Buka URL aplikasi, alamat langsung dibuatkan untukmu. Kirim email ke alamat itu dari mana saja - muncul realtime, tanpa refresh.
+Perintah itu login ke Cloudflare, membuat database D1, menulis konfigurasi, membangun frontend, dan men-deploy Worker - lalu mencetak URL aplikasimu. Deploy ulang setelah perubahan dengan `npm run deploy`; tambah domain nanti dengan `npm run setup -- domain1.com domain2.com`. Langkah catch-all di atas tetap berlaku.
 
 ## Kenapa ini berbeda
 

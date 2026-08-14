@@ -36,6 +36,49 @@ const fail = (error: string): Envelope<never> => ({ success: false, error });
 
 const app = new Hono<{ Bindings: Env }>();
 
+// The D1 database is auto-provisioned empty (Deploy to Cloudflare / Workers Builds),
+// so the Worker owns its schema and creates the tables on first use. IF NOT EXISTS
+// makes this idempotent; the flag keeps it to one batch per isolate, not per request.
+let schemaReady = false;
+async function ensureSchema(env: Env): Promise<void> {
+  if (schemaReady) return;
+  await env.DB.batch([
+    env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS addresses (
+         address    TEXT PRIMARY KEY,
+         created_at INTEGER NOT NULL,
+         expires_at INTEGER NOT NULL
+       )`,
+    ),
+    env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS emails (
+         id          TEXT PRIMARY KEY,
+         address     TEXT NOT NULL,
+         sender      TEXT NOT NULL DEFAULT '',
+         sender_name TEXT NOT NULL DEFAULT '',
+         subject     TEXT NOT NULL DEFAULT '',
+         body_text   TEXT NOT NULL DEFAULT '',
+         body_html   TEXT NOT NULL DEFAULT '',
+         received_at INTEGER NOT NULL,
+         expires_at  INTEGER NOT NULL,
+         is_read     INTEGER NOT NULL DEFAULT 0
+       )`,
+    ),
+    env.DB.prepare(
+      "CREATE INDEX IF NOT EXISTS idx_emails_address ON emails(address, received_at DESC)",
+    ),
+    env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_emails_expires ON emails(expires_at)"),
+    env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_addresses_expires ON addresses(expires_at)"),
+  ]);
+  schemaReady = true;
+}
+
+// Every API/WS request goes through the schema guard first (cheap after the first).
+app.use("*", async (c, next) => {
+  await ensureSchema(c.env);
+  await next();
+});
+
 // The sudevmail client is called cross-origin from several projects -> allow CORS.
 app.use("/api/*", cors({ origin: "*", allowMethods: ["GET", "POST", "OPTIONS", "DELETE"] }));
 
@@ -205,6 +248,7 @@ const worker = {
    * notify the DO to push realtime.
    */
   async email(message: ForwardableEmailMessage, env: Env, _ctx: ExecutionContext): Promise<void> {
+    await ensureSchema(env);
     const address = normAddress(message.to);
 
     // Only store for claimed, unexpired addresses. Everything else is dropped
@@ -262,6 +306,7 @@ const worker = {
     const now = nowSec();
     ctx.waitUntil(
       (async () => {
+        await ensureSchema(env);
         await env.DB.prepare("DELETE FROM emails WHERE expires_at <= ?").bind(now).run();
         await env.DB.prepare("DELETE FROM addresses WHERE expires_at <= ?").bind(now).run();
       })(),

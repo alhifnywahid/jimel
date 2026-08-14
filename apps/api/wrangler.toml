@@ -14,11 +14,12 @@ not_found_handling = "single-page-application"
 run_worker_first = ["/api/*", "/ws/*"]
 
 # ── D1 (SQLite) ──
-# REPLACE database_id with the output of: wrangler d1 create tempmail
+# No database_id on purpose. Cloudflare auto-provisions a D1 database on the
+# first deploy (Deploy to Cloudflare button / Workers Builds) and binds it here.
+# The Worker creates its own tables on first run, so there is nothing to set up.
 [[d1_databases]]
 binding = "DB"
 database_name = "tempmail"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
 
 # ── Durable Object (realtime WebSocket push) ──
 [[durable_objects.bindings]]
