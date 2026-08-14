@@ -8,6 +8,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -182,7 +183,9 @@ export function MailView({ mail, onClose }: MailDisplayProps) {
 
           <Separator className="my-6" />
 
-          {mail.body !== undefined ? (
+          {mail.bodyHtml !== undefined ? (
+            <HtmlBody html={mail.bodyHtml} />
+          ) : mail.body !== undefined ? (
             <div className="whitespace-pre-wrap text-[0.9375rem] text-foreground/90 leading-7">
               {mail.body}
             </div>
@@ -206,5 +209,48 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="wrap-break-word text-foreground">{value}</dd>
     </>
+  );
+}
+
+/**
+ * Render the provider's original HTML email faithfully, isolated in a sandboxed
+ * iframe. The sandbox has NO allow-scripts and NO allow-same-origin, so email
+ * markup cannot run JavaScript, read our cookies, or touch the app DOM - it only
+ * paints. The iframe auto-sizes to its content height on load.
+ */
+function HtmlBody({ html }: { html: string }) {
+  const ref = useRef<HTMLIFrameElement>(null);
+  const [height, setHeight] = useState(240);
+
+  const resize = useCallback(() => {
+    const doc = ref.current?.contentDocument;
+    if (doc?.body) {
+      setHeight(doc.documentElement.scrollHeight || doc.body.scrollHeight);
+    }
+  }, []);
+
+  // A minimal wrapper: force readable defaults, let images scale, block form posts.
+  const srcDoc = `<!doctype html><html><head><meta charset="utf-8">
+<base target="_blank">
+<style>
+  html,body{margin:0;padding:0;background:#fff;color:#111;
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    word-break:break-word;overflow-wrap:break-word;-webkit-text-size-adjust:100%;}
+  body{padding:4px 2px;}
+  img,video{max-width:100%!important;height:auto;}
+  table{max-width:100%!important;}
+  a{color:#2563eb;}
+</style></head><body>${html}</body></html>`;
+
+  return (
+    <iframe
+      ref={ref}
+      title="Email content"
+      sandbox="allow-popups allow-popups-to-escape-sandbox"
+      srcDoc={srcDoc}
+      onLoad={resize}
+      className="w-full rounded-md border bg-white"
+      style={{ height }}
+    />
   );
 }

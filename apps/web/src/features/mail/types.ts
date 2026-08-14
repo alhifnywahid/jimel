@@ -16,8 +16,10 @@ export type Recipient = {
 
 /**
  * Email for display. `body` undefined = header only (body not fetched yet);
- * filled after GET /api/email/{id}. Metadata fields (replyTo etc.) are optional
- * because the tempmail backend does not always provide them.
+ * filled after GET /api/email/{id}. `bodyHtml` is the original provider HTML
+ * (rendered in a sandboxed iframe); `body` is the plain-text fallback shown when
+ * the email has no HTML part. Metadata fields (replyTo etc.) are optional because
+ * the tempmail backend does not always provide them.
  */
 export type Mail = {
   id: string;
@@ -25,6 +27,7 @@ export type Mail = {
   to: Recipient[];
   subject: string;
   body?: string;
+  bodyHtml?: string;
   receivedAt: string;
   isRead: boolean;
   replyTo?: string;
@@ -61,13 +64,16 @@ export function headerToMail(header: EmailHeader, address: string): Mail {
 
 /** Merge the full contents into an existing Mail (adds body + metadata). */
 export function withBody(mail: Mail, full: EmailFull): Mail {
-  const body = full.body_text.trim() || stripHtml(full.body_html);
+  const html = full.body_html.trim();
   return {
     ...mail,
     from: { name: senderName(full), email: full.sender },
     to: [recipientOf(full.address)],
     subject: full.subject,
-    body,
+    // Keep the original HTML for a faithful render; plain text is the fallback
+    // (also used when the email is text-only, or HTML is stripped for the list preview).
+    bodyHtml: html || undefined,
+    body: full.body_text.trim() || (html ? stripHtml(html) : ""),
     isRead: true,
   };
 }
