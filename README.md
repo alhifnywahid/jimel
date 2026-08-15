@@ -168,22 +168,24 @@ Testing `email()` locally without a domain: `npx wrangler dev`, then POST an `.e
 An npm workspaces monorepo, one `node_modules` and one lockfile at the root.
 
 ```
-apps/
-  api/          Worker - Hono, D1, Durable Object, email handler
-    src/
-      index.ts        router + email() + scheduled()
-      inbox-room.ts   Durable Object, WebSocket Hibernation
-      lib.ts          pure utils (domain, prefix, time)
-      types.ts        infrastructure types (Env, D1 rows)
-    schema.sql
-    wrangler.toml
-  web/          Frontend - Vite, React 19, Tailwind v4, shadcn/ui
-    src/features/mail/   inbox, addresses, realtime sync
-    src/features/docs/   API documentation page
-packages/
-  shared/       API contracts used by both sides (DTOs, WS message types)
-scripts/
-  setup-deploy.mjs
+.
+├── apps/
+│   ├── api/                    Worker - Hono, D1, Durable Object, email handler
+│   │   ├── src/
+│   │   │   ├── index.ts        router + email() + scheduled()
+│   │   │   ├── inbox-room.ts   Durable Object, WebSocket Hibernation
+│   │   │   ├── lib.ts          pure utils (domain, prefix, time)
+│   │   │   └── types.ts        infrastructure types (Env, D1 rows)
+│   │   ├── schema.sql
+│   │   └── wrangler.toml
+│   └── web/                    Frontend - Vite, React 19, Tailwind v4, shadcn/ui
+│       └── src/
+│           ├── features/mail/  inbox, addresses, realtime sync
+│           └── features/docs/  API documentation page
+├── packages/
+│   └── shared/                 API contracts used by both sides (DTOs, WS message types)
+└── scripts/
+    └── setup-deploy.mjs
 ```
 
 The module boundaries are kept intentionally: `packages/shared` only holds the DTOs that cross the network, the D1 infrastructure types stay in `apps/api`, and the frontend has its own view-models mapped from the DTOs - so changing the database row shape does not ripple into the React components.

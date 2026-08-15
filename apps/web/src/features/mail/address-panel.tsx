@@ -10,6 +10,18 @@ import { Check, ChevronDown, Copy, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,7 +78,12 @@ export function AddressPanel() {
         <TooltipContent>Copy</TooltipContent>
       </Tooltip>
 
-      <NewAddressPopover domains={domains} generating={generating} onGenerate={generate} />
+      <NewAddressPopover
+        domains={domains}
+        generating={generating}
+        currentAddress={address}
+        onGenerate={generate}
+      />
     </div>
   );
 }
@@ -74,10 +91,16 @@ export function AddressPanel() {
 interface NewAddressPopoverProps {
   domains: string[];
   generating: boolean;
+  currentAddress: string | null;
   onGenerate: (prefix?: string, domain?: string) => Promise<void>;
 }
 
-function NewAddressPopover({ domains, generating, onGenerate }: NewAddressPopoverProps) {
+function NewAddressPopover({
+  domains,
+  generating,
+  currentAddress,
+  onGenerate,
+}: NewAddressPopoverProps) {
   const storedDomain = useAddressStore((s) => s.domain);
   const [open, setOpen] = useState(false);
   const [prefix, setPrefix] = useState("");
@@ -114,9 +137,6 @@ function NewAddressPopover({ domains, generating, onGenerate }: NewAddressPopove
             autoComplete="off"
             spellCheck={false}
             onChange={(e) => setPrefix(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !generating) void submit();
-            }}
           />
         </div>
 
@@ -136,15 +156,32 @@ function NewAddressPopover({ domains, generating, onGenerate }: NewAddressPopove
           </Select>
         </div>
 
-        <Button
-          className="mt-1 w-full"
-          size="sm"
-          disabled={generating}
-          onClick={() => void submit()}
-        >
-          {generating ? <Spinner /> : <RefreshCw />}
-          Create address
-        </Button>
+        {/* Creating a new address abandons the current inbox, so confirm first. */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button className="mt-1 w-full" size="sm" disabled={generating}>
+              {generating ? <Spinner /> : <RefreshCw />}
+              Create address
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogMedia>
+                <RefreshCw />
+              </AlertDialogMedia>
+              <AlertDialogTitle>Create a new address?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {currentAddress
+                  ? `Your current inbox (${currentAddress}) will no longer be shown here, and any email sent to it will not appear. This cannot be undone.`
+                  : "A new disposable inbox address will be created."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => void submit()}>Create address</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </PopoverContent>
     </Popover>
   );

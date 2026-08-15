@@ -11,6 +11,18 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +49,12 @@ export function MailView({ mail, onClose }: MailDisplayProps) {
   const select = useMailStore((s) => s.select);
   const remove = useMailStore((s) => s.remove);
   const loadingBody = useMailStore((s) => s.loadingBody);
+  const mails = useMailStore((s) => s.mails);
+
+  // Position of the open email in the list, so Prev/Next can walk the inbox.
+  const index = mail ? mails.findIndex((m) => m.id === mail.id) : -1;
+  const prevMail = index > 0 ? mails[index - 1] : undefined;
+  const nextMail = index >= 0 && index < mails.length - 1 ? mails[index + 1] : undefined;
 
   function handleClose() {
     select(null);
@@ -89,7 +107,13 @@ export function MailView({ mail, onClose }: MailDisplayProps) {
           <Separator orientation="vertical" className="mx-1 h-4 data-vertical:self-center" />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Previous message">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Previous message"
+                disabled={!prevMail}
+                onClick={() => prevMail && void select(prevMail.id)}
+              >
                 <ChevronLeft />
               </Button>
             </TooltipTrigger>
@@ -97,7 +121,13 @@ export function MailView({ mail, onClose }: MailDisplayProps) {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Next message">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Next message"
+                disabled={!nextMail}
+                onClick={() => nextMail && void select(nextMail.id)}
+              >
                 <ChevronRight />
               </Button>
             </TooltipTrigger>
@@ -106,19 +136,36 @@ export function MailView({ mail, onClose }: MailDisplayProps) {
         </div>
 
         <div className="flex items-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Move to trash"
-                onClick={handleDelete}
-              >
-                <Trash2 className="text-destructive" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Delete</TooltipContent>
-          </Tooltip>
+          <AlertDialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" aria-label="Delete email">
+                    <Trash2 className="text-destructive" />
+                  </Button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Delete</TooltipContent>
+            </Tooltip>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogMedia>
+                  <Trash2 className="text-destructive" />
+                </AlertDialogMedia>
+                <AlertDialogTitle>Delete this email?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  "{mail.subject}" will be permanently removed from this inbox. This cannot be
+                  undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={handleDelete}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
