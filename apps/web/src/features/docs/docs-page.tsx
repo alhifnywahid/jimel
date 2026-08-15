@@ -53,11 +53,11 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
 /** A monospace code block with a copy button in the corner. */
 function CodeBlock({ code }: { code: string }) {
   return (
-    <div className="group relative">
-      <div className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+    <div className="group relative min-w-0">
+      <div className="absolute top-2 right-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
         <CopyButton text={code} />
       </div>
-      <pre className="scrollbar-none overflow-x-auto rounded-lg border bg-muted/40 p-3 text-xs leading-relaxed">
+      <pre className="scrollbar-none max-w-full overflow-x-auto rounded-lg border bg-muted/40 p-3 text-xs leading-relaxed">
         <code className="font-mono">{code}</code>
       </pre>
     </div>
@@ -66,12 +66,12 @@ function CodeBlock({ code }: { code: string }) {
 
 function EndpointCard({ ep }: { ep: EndpointDoc }) {
   return (
-    <section id={ep.id} className="scroll-mt-20 rounded-xl border bg-card p-5">
+    <section id={ep.id} className="scroll-mt-20 min-w-0 rounded-xl border bg-card p-5">
       <div className="flex flex-wrap items-center gap-2">
         <Badge className={cn("font-mono text-[0.7rem]", METHOD_COLORS[ep.method])}>
           {ep.method}
         </Badge>
-        <code className="font-mono text-sm">{ep.path}</code>
+        <code className="break-all font-mono text-sm">{ep.path}</code>
       </div>
       <h3 className="mt-3 font-heading font-semibold text-lg">{ep.title}</h3>
       <p className="mt-1 text-muted-foreground text-sm leading-relaxed">{ep.summary}</p>
@@ -101,11 +101,11 @@ function EndpointCard({ ep }: { ep: EndpointDoc }) {
       ) : null}
 
       <div className="mt-4 grid gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="mb-1.5 font-medium text-xs uppercase tracking-wide">Example request</p>
           <CodeBlock code={ep.request} />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="mb-1.5 font-medium text-xs uppercase tracking-wide">Example response</p>
           <CodeBlock code={ep.response} />
         </div>
@@ -127,21 +127,21 @@ function EndpointCard({ ep }: { ep: EndpointDoc }) {
 
 export function DocsPage() {
   return (
-    <div className="min-h-svh bg-background">
+    <div className="min-h-svh overflow-x-hidden bg-background">
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between gap-3 px-4">
           <a
             href="/"
             onClick={(e) => {
               e.preventDefault();
               navigate("/");
             }}
-            className="inline-flex items-center gap-1.5 text-sm hover:text-foreground"
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm hover:text-foreground"
           >
             <ArrowLeft className="size-4" />
             Back to inbox
           </a>
-          <span className="font-heading font-semibold">{APP_CONFIG.name} API</span>
+          <span className="truncate font-heading font-semibold">{APP_CONFIG.name} API</span>
         </div>
       </header>
 
@@ -150,12 +150,12 @@ export function DocsPage() {
         <p className="mt-2 max-w-2xl text-muted-foreground leading-relaxed">
           REST + WebSocket for disposable email. No authentication, no API key - just call the
           endpoints below. Replace{" "}
-          <code className="font-mono text-foreground text-sm">YOUR_WORKER_URL</code> with your
-          Worker domain.
+          <code className="break-all font-mono text-foreground text-sm">YOUR_WORKER_URL</code> with
+          your Worker domain.
         </p>
 
         {/* Envelope */}
-        <section className="mt-8 rounded-xl border bg-card p-5">
+        <section className="mt-8 min-w-0 rounded-xl border bg-card p-5">
           <h2 className="font-heading font-semibold text-lg">Response format</h2>
           <CodeBlockNote text={ENVELOPE_NOTE} />
         </section>
@@ -166,28 +166,28 @@ export function DocsPage() {
             <a
               key={ep.id}
               href={`#${ep.id}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition-colors hover:bg-muted"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition-colors hover:bg-muted"
             >
               <Badge className={cn("font-mono text-[0.65rem]", METHOD_COLORS[ep.method])}>
                 {ep.method}
               </Badge>
-              <code className="font-mono">{ep.path}</code>
+              <code className="truncate font-mono">{ep.path}</code>
             </a>
           ))}
         </nav>
 
         <Separator className="my-8" />
 
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-6">
           {ENDPOINTS.map((ep) => (
             <EndpointCard key={ep.id} ep={ep} />
           ))}
         </div>
 
         {/* AI prompt */}
-        <section className="mt-10 rounded-xl border bg-card p-5">
-          <div className="flex items-center justify-between gap-2">
-            <div>
+        <section className="mt-10 min-w-0 rounded-xl border bg-card p-5">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0">
               <h2 className="font-heading font-semibold text-lg">Quick integration via AI</h2>
               <p className="mt-1 text-muted-foreground text-sm">
                 Paste this prompt into an AI so it immediately understands how to use the JIMEL API.
