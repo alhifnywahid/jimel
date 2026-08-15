@@ -168,22 +168,24 @@ Menguji `email()` lokal tanpa domain: `npx wrangler dev` lalu POST file `.eml` k
 Monorepo npm workspaces, satu `node_modules` dan satu lockfile di root.
 
 ```
-apps/
-  api/          Worker - Hono, D1, Durable Object, handler email
-    src/
-      index.ts        router + email() + scheduled()
-      inbox-room.ts   Durable Object, WebSocket Hibernation
-      lib.ts          util murni (domain, prefix, waktu)
-      types.ts        tipe infrastruktur (Env, row D1)
-    schema.sql
-    wrangler.toml
-  web/          Frontend - Vite, React 19, Tailwind v4, shadcn/ui
-    src/features/mail/   inbox, alamat, sinkronisasi realtime
-    src/features/docs/   halaman dokumentasi API
-packages/
-  shared/       kontrak API yang dipakai kedua sisi (DTO, tipe pesan WS)
-scripts/
-  setup-deploy.mjs
+.
+├── apps/
+│   ├── api/                    Worker - Hono, D1, Durable Object, handler email
+│   │   ├── src/
+│   │   │   ├── index.ts        router + email() + scheduled()
+│   │   │   ├── inbox-room.ts   Durable Object, WebSocket Hibernation
+│   │   │   ├── lib.ts          util murni (domain, prefix, waktu)
+│   │   │   └── types.ts        tipe infrastruktur (Env, row D1)
+│   │   ├── schema.sql
+│   │   └── wrangler.toml
+│   └── web/                    Frontend - Vite, React 19, Tailwind v4, shadcn/ui
+│       └── src/
+│           ├── features/mail/  inbox, alamat, sinkronisasi realtime
+│           └── features/docs/  halaman dokumentasi API
+├── packages/
+│   └── shared/                 kontrak API yang dipakai kedua sisi (DTO, tipe pesan WS)
+└── scripts/
+    └── setup-deploy.mjs
 ```
 
 Batas modulnya sengaja dijaga: `packages/shared` hanya berisi DTO yang menyeberangi jaringan, tipe infrastruktur D1 tinggal di `apps/api`, dan frontend punya view-model sendiri yang dipetakan dari DTO - jadi mengubah bentuk row database tidak merembet ke komponen React.
