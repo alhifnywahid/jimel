@@ -6,6 +6,7 @@
  * from the server (GET /api/domains) once at boot; the first domain is the default.
  */
 
+import { toast } from "sonner";
 import { create } from "zustand";
 
 import { ApiError, fetchDomains, generateAddress, randomPrefix } from "@/lib/api";
@@ -67,7 +68,9 @@ export const useAddressStore = create<AddressState>((set, get) => ({
       // If no domain is selected yet, use the default (the first domain).
       if (!get().domain && domains[0]) set({ domain: domains[0] });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : "Failed to load domains." });
+      const message = error instanceof Error ? error.message : "Failed to load domains.";
+      set({ error: message });
+      toast.error(message);
     }
   },
 
@@ -104,10 +107,9 @@ export const useAddressStore = create<AddressState>((set, get) => ({
       }
       throw new Error("Could not find a free address. Please try again.");
     } catch (error) {
-      set({
-        generating: false,
-        error: error instanceof Error ? error.message : "Failed to create an address.",
-      });
+      const message = error instanceof Error ? error.message : "Failed to create an address.";
+      set({ generating: false, error: message });
+      toast.error(message);
     }
   },
 }));
