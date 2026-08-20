@@ -3,7 +3,9 @@
  *
  * The REST contract MIRRORS sudevmail EXACTLY (see the sudevmail-api-contract memory)
  * so the 5 legacy projects only need to swap their base URL:
- *   POST /api/address/generate  {prefix}  -> {id, address, createdAt, expiresAt}  (409 if taken)
+ *   POST /api/address/generate  {prefix}  -> {id, address, createdAt, expiresAt, created}
+ *       Idempotent: an existing address is OPENED (created:false), not refused, so one
+ *       inbox can be shared. Send {exclusive:true} to get the old 409-if-taken behavior.
  *   GET  /api/inbox/{address}             -> {address, expiresAt, emails[header]}  (404 if missing)
  *   GET  /api/email/{id}                  -> full message incl. body_text/body_html
  * Envelope: {success, data} | {success, error}. Time = epoch SECONDS. Row fields = snake_case.
@@ -92,11 +94,25 @@ app.get("/api/domains", (c) => {
 });
 
 /**
- * POST /api/address/generate  { prefix }
- * Claim one address. 409 if the prefix is already taken (client re-rolls only on 409).
+ * POST /api/address/generate  { prefix, domain?, exclusive? }
+ *
+ * Claim an address, or OPEN it if it already exists ("claim or open"). The call is
+ * idempotent: two browsers asking for the same address both get it and both see the
+ * same inbox, because an address is a mailbox name, not an owned resource - there is
+ * no auth here, so refusing the second caller protected nothing and only made a
+ * still-live inbox unreachable.
+ *
+ * `created` in the reply tells the two cases apart (true = the row was just inserted).
+ * An already-existing address keeps its ORIGINAL createdAt/expiresAt - opening an
+ * inbox must not silently extend its lifetime. An expired row is reclaimed as new
+ * (its emails are already gone or about to be purged by cron).
+ *
+ * `exclusive: true` restores the old behavior and replies 409 when the address exists.
+ * Automations that want a fresh throwaway address (random prefix + re-roll on 409)
+ * should send it, so a collision does not hand them somebody else's inbox.
  */
 app.post("/api/address/generate", async (c) => {
-  let body: { prefix?: string; domain?: string };
+  let body: { prefix?: string; domain?: string; exclusive?: boolean };
   try {
     body = await c.req.json();
   } catch {
@@ -125,27 +141,42 @@ app.post("/api/address/generate", async (c) => {
   const now = nowSec();
   const expiresAt = now + ttlMinutes(c.env) * 60;
 
-  // An INSERT that fails because the PK already exists = 409. Check existing first
-  // for a clear error message, then insert (a race is still handled by the PK constraint).
-  const existing = await c.env.DB.prepare("SELECT address FROM addresses WHERE address = ?")
+  const existing = await c.env.DB.prepare(
+    "SELECT address, created_at, expires_at FROM addresses WHERE address = ?",
+  )
     .bind(address)
-    .first<{ address: string }>();
-  if (existing) {
-    return c.json(fail("That address is already taken."), 409);
+    .first<AddressRow>();
+
+  // A row past its TTL is treated as absent: its emails are already purged, so the
+  // address is free to be reclaimed with a fresh lifetime.
+  const live = existing && existing.expires_at > now ? existing : null;
+
+  if (live) {
+    if (body.exclusive === true) {
+      return c.json(fail("That address is already taken."), 409);
+    }
+    // Open the existing inbox, keeping its original lifetime.
+    return c.json(
+      ok({
+        id: address,
+        address,
+        domain,
+        createdAt: live.created_at,
+        expiresAt: live.expires_at,
+        created: false,
+      }),
+    );
   }
 
-  try {
-    await c.env.DB.prepare(
-      "INSERT INTO addresses (address, created_at, expires_at) VALUES (?, ?, ?)",
-    )
-      .bind(address, now, expiresAt)
-      .run();
-  } catch {
-    // Likely a race: another request created the row first -> still 409.
-    return c.json(fail("That address is already taken."), 409);
-  }
+  // INSERT OR REPLACE covers both "brand new" and "expired row being reclaimed",
+  // and makes a race with a concurrent identical request harmless.
+  await c.env.DB.prepare(
+    "INSERT OR REPLACE INTO addresses (address, created_at, expires_at) VALUES (?, ?, ?)",
+  )
+    .bind(address, now, expiresAt)
+    .run();
 
-  return c.json(ok({ id: address, address, domain, createdAt: now, expiresAt }));
+  return c.json(ok({ id: address, address, domain, createdAt: now, expiresAt, created: true }));
 });
 
 /**

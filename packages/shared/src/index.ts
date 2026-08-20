@@ -35,13 +35,22 @@ export interface EmailFull {
   is_read: boolean;
 }
 
-/** Response of POST /api/address/generate. */
+/**
+ * Response of POST /api/address/generate.
+ *
+ * The call is idempotent ("claim or open"): asking for an address that is already
+ * claimed opens it instead of failing, so the same inbox can be used from several
+ * browsers or devices. `created` says which of the two happened - false means the
+ * address already existed, which is how a client that wants an EXCLUSIVE address
+ * (e.g. an automation using a random prefix) detects a collision and re-rolls.
+ */
 export interface AddressResponse {
   id: string;
   address: string;
   domain: string;
   createdAt: number;
   expiresAt: number;
+  created: boolean;
 }
 
 /** Response of GET /api/domains - domains whose catch-all is pointed at the Worker. */

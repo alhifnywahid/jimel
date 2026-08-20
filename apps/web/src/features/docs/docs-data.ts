@@ -55,9 +55,9 @@ export const ENDPOINTS: EndpointDoc[] = [
     id: "generate",
     method: "POST",
     path: "/api/address/generate",
-    title: "Create an address (chosen / random)",
+    title: "Create or open an address",
     summary:
-      "Claim one inbox address. Send a prefix of your choice, or a random prefix you generate yourself. domain is optional - if empty the default domain is used. The address is valid until expiresAt.",
+      "Claim an inbox address, or open it if it already exists - the call is idempotent, so several browsers or devices can use the same inbox. Send a prefix of your choice, or a random prefix you generate yourself. domain is optional - if empty the default domain is used. The address is valid until expiresAt.",
     params: [
       {
         name: "prefix",
@@ -68,6 +68,11 @@ export const ENDPOINTS: EndpointDoc[] = [
         name: "domain",
         required: false,
         desc: "One of /api/domains. Empty = the default domain (the first one).",
+      },
+      {
+        name: "exclusive",
+        required: false,
+        desc: "true = demand an address that is not claimed yet; replies 409 if it exists. Use it for throwaway addresses so a collision does not open somebody else's inbox.",
       },
     ],
     request: `curl -s -X POST https://YOUR_WORKER_URL/api/address/generate \\
@@ -80,11 +85,14 @@ export const ENDPOINTS: EndpointDoc[] = [
     "address": "shopping01@jimel.email",
     "domain": "jimel.email",
     "createdAt": 1786649171,
-    "expiresAt": 1786652771
+    "expiresAt": 1786652771,
+    "created": true
   }
 }`,
     notes: [
-      "409 if the prefix is already taken by someone else - generate a new random prefix and try again.",
+      "created: true = the address was just created. false = it already existed and was opened; you get its ORIGINAL createdAt/expiresAt, because opening an inbox does not extend its lifetime.",
+      "Calling it again with the same prefix is safe and returns the same inbox - that is how you reopen an address on another device.",
+      "409 only when you send exclusive: true and the address already exists - re-roll the prefix and try again.",
       "400 if the prefix is invalid or the domain is unknown.",
       "For a RANDOM address: generate a random string yourself (e.g. 12 letters/digits) as the prefix, there is no dedicated endpoint.",
     ],
@@ -207,7 +215,11 @@ Time = epoch seconds. No authentication.
 
 Endpoints:
 - GET  /api/domains                 -> string[] active domains (first = default)
-- POST /api/address/generate        -> body {prefix, domain?}; replies {address, expiresAt, ...}; 409 if prefix is taken
+- POST /api/address/generate        -> body {prefix, domain?, exclusive?}; replies {address, expiresAt, created, ...}
+                                      Idempotent: an existing address is OPENED (created:false) with its original
+                                      expiresAt, so the same inbox works from several clients. Send exclusive:true
+                                      to demand an unclaimed address instead (409 if it exists) - use that for
+                                      throwaway addresses with a random prefix, and re-roll on 409.
 - GET  /api/inbox/{address}         -> {address, expiresAt, emails:[{id,sender,sender_name,subject,received_at,is_read}]}
 - GET  /api/email/{id}              -> full email incl. body_text/body_html (marks it read)
 - DELETE /api/email/{id}            -> {deleted:true}

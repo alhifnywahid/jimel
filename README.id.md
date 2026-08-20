@@ -110,7 +110,7 @@ Base URL = URL Worker-mu. Semua respons dibungkus envelope `{ success, data }` a
 | Metode   | Endpoint                | Fungsi                                                               |
 | -------- | ----------------------- | -------------------------------------------------------------------- |
 | `GET`    | `/api/domains`          | daftar domain aktif; yang pertama = default                          |
-| `POST`   | `/api/address/generate` | klaim alamat - body `{ prefix, domain? }`, `409` kalau sudah dipakai |
+| `POST`   | `/api/address/generate` | klaim alamat, atau buka kalau sudah ada - body `{ prefix, domain?, exclusive? }` |
 | `GET`    | `/api/inbox/{address}`  | daftar header email; `404` kalau alamat belum diklaim                |
 | `GET`    | `/api/email/{id}`       | isi penuh email, sekaligus menandai sudah dibaca                     |
 | `DELETE` | `/api/email/{id}`       | hapus satu email (idempotent)                                        |
@@ -194,7 +194,7 @@ Batas modulnya sengaja dijaga: `packages/shared` hanya berisi DTO yang menyebera
 
 **API-nya publik dan tanpa autentikasi. Ini keputusan desain, bukan kelalaian.** Konsekuensinya:
 
-- Siapa pun yang tahu sebuah alamat bisa membaca inbox-nya lewat API. Perlakukan setiap alamat sebagai rahasia jangka pendek.
+- Siapa pun yang tahu sebuah alamat bisa membaca inbox-nya lewat API, dan klaim alamat bersifat idempotent - pemanggil kedua membuka inbox yang sama, bukan ditolak. Itulah yang membuat satu inbox bisa dipakai dari beberapa perangkat; artinya juga sebuah alamat hanya seprivat kenyataan bahwa belum ada yang menebaknya. Perlakukan setiap alamat sebagai rahasia jangka pendek.
 - Siapa pun bisa mengklaim alamat di domainmu. Kalau instansmu dipakai publik, pertimbangkan Cloudflare WAF rate limiting di `/api/address/generate`.
 - Jangan pakai untuk apa pun yang penting: reset password akun asli, dokumen, data pribadi.
 - Email disimpan sebagai plaintext di D1-mu sampai TTL habis.

@@ -6,13 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-### Fixed
-
-- **Git-connected deploys failed with `Missing entry-point to Worker script or to assets directory`.** Workers Builds runs its commands from the repository root, where there was no Worker config - `wrangler.toml` lived in `apps/api/`. The build itself always succeeded; only the deploy step failed, which is why a Worker deployed earlier by `npm run setup` (which ran wrangler from `apps/api/`) stayed live while every push silently stopped shipping. The config now sits at the repo root with root-relative paths, so the Deploy to Cloudflare button and Workers Builds work with no dashboard setup.
-
 ### Changed
 
+- **Claiming an address is now idempotent ("claim or open").** `POST /api/address/generate` used to reply `409` when the address already existed, which made an address behave like an owned resource - except there is no auth, so refusing the second caller protected nothing and only made a still-live inbox unreachable: reopening your own address in another browser, or after clearing localStorage, failed outright. The endpoint now OPENS an existing address and returns `created: false` with its **original** `createdAt`/`expiresAt` (opening an inbox must not extend its lifetime). Send `{"exclusive": true}` for the old behavior - the UI uses it for random prefixes so a collision re-rolls instead of handing over a stranger's inbox. An expired address is reclaimed as new.
+
 - **Zero-config database.** The `database_id` is no longer needed in `wrangler.toml`. Cloudflare auto-provisions the D1 database on the first deploy, and the Worker now creates its own tables on first run (`ensureSchema()`), so there is nothing to set up by hand.
+
+### Fixed
+
+- **Claiming an address that was already taken failed silently in the UI.** The store recorded the message in `error`, but no component ever rendered it; the only visible effect was the popover staying open, so the button looked broken. Failures now raise a toast.
+
+- **Git-connected deploys failed with `Missing entry-point to Worker script or to assets directory`.** Workers Builds runs its commands from the repository root, where there was no Worker config - `wrangler.toml` lived in `apps/api/`. The build itself always succeeded; only the deploy step failed, which is why a Worker deployed earlier by `npm run setup` (which ran wrangler from `apps/api/`) stayed live while every push silently stopped shipping. The config now sits at the repo root with root-relative paths, so the Deploy to Cloudflare button and Workers Builds work with no dashboard setup.
 
 ### Added
 

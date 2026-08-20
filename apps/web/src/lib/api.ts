@@ -45,14 +45,25 @@ export async function fetchDomains(): Promise<DomainsResponse> {
 }
 
 /**
- * POST /api/address/generate - claim an address. Send prefix + domain (optional).
- * ApiError.status === 409 means the prefix is taken (the caller may re-roll).
+ * POST /api/address/generate - claim an address, or open it if it already exists.
+ * `created: false` in the reply means it existed and was opened, not created.
+ *
+ * Pass exclusive: true to demand a NOT-yet-claimed address; the server then replies
+ * 409 (ApiError.status === 409) when it exists, so the caller can re-roll the prefix.
  */
-export async function generateAddress(prefix: string, domain?: string): Promise<AddressResponse> {
+export async function generateAddress(
+  prefix: string,
+  domain?: string,
+  exclusive = false,
+): Promise<AddressResponse> {
   const res = await fetch("/api/address/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prefix, ...(domain ? { domain } : {}) }),
+    body: JSON.stringify({
+      prefix,
+      ...(domain ? { domain } : {}),
+      ...(exclusive ? { exclusive: true } : {}),
+    }),
   });
   return unwrap<AddressResponse>(res);
 }

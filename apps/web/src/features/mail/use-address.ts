@@ -30,7 +30,11 @@ type AddressState = {
   error: string | null;
 
   loadDomains: () => Promise<void>;
-  /** Claim a new address. Empty prefix -> random. Auto re-rolls on 409. */
+  /**
+   * Claim an address, or open it if it already exists. A prefix typed by the user
+   * OPENS the existing inbox (so the same address works across browsers/devices);
+   * a random prefix demands an unused one and re-rolls on collision.
+   */
   generate: (prefix?: string, domain?: string) => Promise<void>;
 };
 
@@ -79,15 +83,16 @@ export const useAddressStore = create<AddressState>((set, get) => ({
     set({ generating: true, error: null });
 
     const chosenDomain = domain ?? get().domain ?? undefined;
-    // Empty prefix -> random. If the user typed a prefix and hits 409, we
-    // respect their choice (throw the error) rather than silently swapping it.
+    // A prefix the user typed is a request for THAT inbox: let the server open it if
+    // it exists. A random prefix is meant to be a fresh throwaway, so ask for it
+    // exclusively and re-roll on 409 rather than landing in a stranger's inbox.
     const userChosePrefix = Boolean(prefix?.trim());
     let attemptPrefix = prefix?.trim() || randomPrefix();
 
     try {
       for (let attempt = 0; attempt < 5; attempt++) {
         try {
-          const result = await generateAddress(attemptPrefix, chosenDomain);
+          const result = await generateAddress(attemptPrefix, chosenDomain, !userChosePrefix);
           const next: StoredAddress = {
             address: result.address,
             domain: result.domain,
@@ -95,10 +100,11 @@ export const useAddressStore = create<AddressState>((set, get) => ({
           };
           persist(next);
           set({ ...next, generating: false, error: null });
+          if (!result.created) toast.info(`Opened the existing inbox ${result.address}`);
           return;
         } catch (error) {
-          // 409 + random prefix = collision -> try another random prefix.
-          if (error instanceof ApiError && error.status === 409 && !userChosePrefix) {
+          // 409 can only happen for a random prefix now -> collision, try another.
+          if (error instanceof ApiError && error.status === 409) {
             attemptPrefix = randomPrefix();
             continue;
           }

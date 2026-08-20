@@ -110,7 +110,7 @@ Base URL = your Worker URL. Every response is wrapped in an envelope `{ success,
 | Method   | Endpoint                | Purpose                                                                |
 | -------- | ----------------------- | ---------------------------------------------------------------------- |
 | `GET`    | `/api/domains`          | list of active domains; the first one = default                        |
-| `POST`   | `/api/address/generate` | claim an address - body `{ prefix, domain? }`, `409` if already in use  |
+| `POST`   | `/api/address/generate` | claim an address, or open it if it exists - body `{ prefix, domain?, exclusive? }` |
 | `GET`    | `/api/inbox/{address}`  | list of email headers; `404` if the address has not been claimed        |
 | `GET`    | `/api/email/{id}`       | full email content, also marks it as read                              |
 | `DELETE` | `/api/email/{id}`       | delete a single email (idempotent)                                     |
@@ -194,7 +194,7 @@ The module boundaries are kept intentionally: `packages/shared` only holds the D
 
 **The API is public and unauthenticated. This is a design decision, not an oversight.** The consequences:
 
-- Anyone who knows an address can read its inbox via the API. Treat every address as a short-lived secret.
+- Anyone who knows an address can read its inbox via the API, and claiming an address is idempotent - a second caller opens the same inbox rather than being refused. That is what makes one inbox usable from several devices; it also means an address is only as private as the fact that nobody guessed it. Treat every address as a short-lived secret.
 - Anyone can claim an address on your domain. If your instance is used publicly, consider Cloudflare WAF rate limiting on `/api/address/generate`.
 - Do not use it for anything important: real account password resets, documents, personal data.
 - Emails are stored as plaintext in your D1 until the TTL expires.
