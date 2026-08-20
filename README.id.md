@@ -31,7 +31,7 @@ Ini jalur yang disarankan. Klik tombolnya, Cloudflare otomatis:
 
 Setelah deploy pertama, tersisa dua langkah manual (keduanya sekali saja, keduanya karena menyentuh akun dan domainmu sendiri):
 
-**a) Atur domainmu.** Edit [`apps/api/wrangler.toml`](apps/api/wrangler.toml) di repo barumu, pada baris `MAIL_DOMAINS`, lalu commit - push-nya auto-deploy:
+**a) Atur domainmu.** Edit [`wrangler.toml`](wrangler.toml) di repo barumu, pada baris `MAIL_DOMAINS`, lalu commit - push-nya auto-deploy:
 
 ```toml
 MAIL_DOMAINS = "domainkamu.com"          # atau "domain1.com,domain2.io" untuk beberapa
@@ -45,7 +45,7 @@ Buka URL aplikasi, alamat langsung dibuatkan untukmu. Kirim email ke alamat itu 
 
 ### Menambah atau menghapus domain nanti
 
-Tanpa CLI, tanpa login. Cukup edit `MAIL_DOMAINS` di `apps/api/wrangler.toml` lalu push:
+Tanpa CLI, tanpa login. Cukup edit `MAIL_DOMAINS` di `wrangler.toml` lalu push:
 
 ```toml
 MAIL_DOMAINS = "domain1.com,domain2.io,domainbaru.net"   # tambah: sisipkan
@@ -129,7 +129,7 @@ Referensi lengkap ada di halaman `/docs` aplikasimu - termasuk prompt yang bisa 
 
 ## Konfigurasi
 
-**Tidak ada `.env`.** Worker tidak membaca file `.env` saat runtime; konfigurasi masuk sebagai binding dari [`apps/api/wrangler.toml`](apps/api/wrangler.toml) waktu deploy.
+**Tidak ada `.env`.** Worker tidak membaca file `.env` saat runtime; konfigurasi masuk sebagai binding dari [`wrangler.toml`](wrangler.toml) waktu deploy.
 
 ```toml
 [vars]
@@ -176,16 +176,16 @@ Monorepo npm workspaces, satu `node_modules` dan satu lockfile di root.
 │   │   │   ├── inbox-room.ts   Durable Object, WebSocket Hibernation
 │   │   │   ├── lib.ts          util murni (domain, prefix, waktu)
 │   │   │   └── types.ts        tipe infrastruktur (Env, row D1)
-│   │   ├── schema.sql
-│   │   └── wrangler.toml
+│   │   └── schema.sql
 │   └── web/                    Frontend - Vite, React 19, Tailwind v4, shadcn/ui
 │       └── src/
 │           ├── features/mail/  inbox, alamat, sinkronisasi realtime
 │           └── features/docs/  halaman dokumentasi API
 ├── packages/
 │   └── shared/                 kontrak API yang dipakai kedua sisi (DTO, tipe pesan WS)
-└── scripts/
-    └── setup-deploy.mjs
+├── scripts/
+│   └── setup-deploy.mjs
+└── wrangler.toml               config Worker - di root supaya Workers Builds menemukannya
 ```
 
 Batas modulnya sengaja dijaga: `packages/shared` hanya berisi DTO yang menyeberangi jaringan, tipe infrastruktur D1 tinggal di `apps/api`, dan frontend punya view-model sendiri yang dipetakan dari DTO - jadi mengubah bentuk row database tidak merembet ke komponen React.

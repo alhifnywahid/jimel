@@ -19,7 +19,7 @@ It is almost always the Email Routing catch-all that has not been pointed. Cloud
 The WebSocket is likely blocked by your network. The frontend should fall back to polling every 8 seconds. Open DevTools → Network → WS tab to see whether the connection is being closed.
 
 **The address I created is gone.**
-Addresses have a TTL (`MESSAGE_TTL_MINUTES`, default 60 minutes) and are cleaned up by cron. This is the intended behavior. Change the value in `apps/api/wrangler.toml` and redeploy.
+Addresses have a TTL (`MESSAGE_TTL_MINUTES`, default 60 minutes) and are cleaned up by cron. This is the intended behavior. Change the value in `wrangler.toml` and redeploy.
 
 **The inbox returns 404.**
 That address has never been claimed, or it has expired. Claim it first via `POST /api/address/generate`.

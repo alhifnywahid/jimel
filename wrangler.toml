@@ -1,6 +1,6 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "tempmail"
-main = "src/index.ts"
+main = "apps/api/src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
@@ -12,9 +12,10 @@ keep_vars = true
 
 # ── Static assets (the built apps/web UI) ──
 # The Worker serves FE + BE from one URL. run_worker_first so /api & /ws
-# are handled by the Worker, the rest falls through to the SPA. Path is relative to apps/api/ -> sibling apps/web.
+# are handled by the Worker, the rest falls through to the SPA. Paths are relative to
+# this file, which lives at the repo root so Workers Builds finds it without setup.
 [assets]
-directory = "../web/dist"
+directory = "apps/web/dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*", "/ws/*"]
@@ -71,4 +72,4 @@ head_sampling_rate = 1
 #                        e.g. "jimel.eu.cc,indomie.eu.cc"
 #   MESSAGE_TTL_MINUTES  email/address lifetime in minutes (default 60)
 #
-# For local dev, put them in apps/api/.dev.vars (gitignored) instead.
+# For local dev, put them in .dev.vars at the repo root (gitignored) instead.

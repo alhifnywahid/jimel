@@ -31,7 +31,7 @@ This is the recommended path. Clicking the button makes Cloudflare:
 
 After the first deploy, two manual steps remain (both one-time, both because they touch your own account and domain):
 
-**a) Set your domains.** Edit [`apps/api/wrangler.toml`](apps/api/wrangler.toml) in your new repo, on the `MAIL_DOMAINS` line, then commit - the push auto-deploys:
+**a) Set your domains.** Edit [`wrangler.toml`](wrangler.toml) in your new repo, on the `MAIL_DOMAINS` line, then commit - the push auto-deploys:
 
 ```toml
 MAIL_DOMAINS = "yourdomain.com"          # or "domain1.com,domain2.io" for several
@@ -45,7 +45,7 @@ Open the app URL and an address is created for you right away. Send email to tha
 
 ### Adding or removing a domain later
 
-No CLI, no login. Just edit `MAIL_DOMAINS` in `apps/api/wrangler.toml` and push:
+No CLI, no login. Just edit `MAIL_DOMAINS` in `wrangler.toml` and push:
 
 ```toml
 MAIL_DOMAINS = "domain1.com,domain2.io,newdomain.net"   # add: append it
@@ -129,7 +129,7 @@ The full reference is on your app's `/docs` page - including a prompt you can pa
 
 ## Configuration
 
-**There is no `.env`.** The Worker does not read a `.env` file at runtime; configuration comes in as bindings from [`apps/api/wrangler.toml`](apps/api/wrangler.toml) at deploy time.
+**There is no `.env`.** The Worker does not read a `.env` file at runtime; configuration comes in as bindings from [`wrangler.toml`](wrangler.toml) at deploy time.
 
 ```toml
 [vars]
@@ -176,16 +176,16 @@ An npm workspaces monorepo, one `node_modules` and one lockfile at the root.
 │   │   │   ├── inbox-room.ts   Durable Object, WebSocket Hibernation
 │   │   │   ├── lib.ts          pure utils (domain, prefix, time)
 │   │   │   └── types.ts        infrastructure types (Env, D1 rows)
-│   │   ├── schema.sql
-│   │   └── wrangler.toml
+│   │   └── schema.sql
 │   └── web/                    Frontend - Vite, React 19, Tailwind v4, shadcn/ui
 │       └── src/
 │           ├── features/mail/  inbox, addresses, realtime sync
 │           └── features/docs/  API documentation page
 ├── packages/
 │   └── shared/                 API contracts used by both sides (DTOs, WS message types)
-└── scripts/
-    └── setup-deploy.mjs
+├── scripts/
+│   └── setup-deploy.mjs
+└── wrangler.toml               Worker config - at the root so Workers Builds finds it
 ```
 
 The module boundaries are kept intentionally: `packages/shared` only holds the DTOs that cross the network, the D1 infrastructure types stay in `apps/api`, and the frontend has its own view-models mapped from the DTOs - so changing the database row shape does not ripple into the React components.

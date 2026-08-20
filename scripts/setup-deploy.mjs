@@ -25,8 +25,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const API_DIR = join(ROOT, "apps", "api");
-const WRANGLER_TOML = join(API_DIR, "wrangler.toml");
+const WRANGLER_TOML = join(ROOT, "wrangler.toml");
 const DB_NAME = "tempmail";
 const TOTAL_STEPS = 6;
 
@@ -75,7 +74,7 @@ if (domains.length === 0 || domains.includes("example.com")) {
        npm run setup -- jimel.email
        npm run setup -- jimel.email mail2.io
 
-  B) Edit apps/api/wrangler.toml yourself on the line:
+  B) Edit wrangler.toml yourself on the line:
        MAIL_DOMAINS = "jimel.email,mail2.io"
      then run: npm run setup
 
@@ -134,9 +133,7 @@ console.log(`  MAIL_DOMAINS = ${domains.join(",")}`);
 
 // ── 4. Production D1 tables ──
 step(4, "Creating tables in production D1…");
-run("npx", ["wrangler", "d1", "execute", DB_NAME, "--remote", "--file=./schema.sql", "-y"], {
-	cwd: API_DIR,
-});
+run("npx", ["wrangler", "d1", "execute", DB_NAME, "--remote", "--file=apps/api/schema.sql", "-y"]);
 
 // ── 5. Build frontend ──
 step(5, "Building the frontend…");
@@ -146,7 +143,7 @@ run("npm", ["run", "build"]);
 step(6, "Deploying the Worker (frontend + API together)…");
 let deployOut = "";
 try {
-	deployOut = capture("npx", ["wrangler", "deploy"], { cwd: API_DIR });
+	deployOut = capture("npx", ["wrangler", "deploy"]);
 	console.log(deployOut);
 } catch (error) {
 	console.log(error.stdout ?? "");
