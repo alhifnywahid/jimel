@@ -20,7 +20,7 @@
     "lint:fix": "biome check --write ."
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.0",
-    "wrangler": "^4.40.0"
+    "@biomejs/biome": "^2.5.15",
+    "wrangler": "^4.149.0"
   }
 }
